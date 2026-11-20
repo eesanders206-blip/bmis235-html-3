@@ -36,7 +36,136 @@
      This box is empty on purpose. In Part 7 you paste an interactive
      graphic BETWEEN the opening <div> and the closing </div> below.
      ===================================================================== -->
-<div class="showcase"></div>
+<div class="showcase"><!-- HTML: the stage (purple box) holds a record, three word tags, and a bounce counter -->
+<div class="dj-stage">
+  <div class="dj-item dj-record"></div>
+  <div class="dj-item dj-tag">BEATS</div>
+  <div class="dj-item dj-tag">MIX</div>
+  <div class="dj-item dj-tag">DROP</div>
+  <div class="dj-counter">Bounces: 0 · click anything to speed it up</div>
+</div>
+
+<!-- CSS: styles the stage and the bouncing pieces. Every rule starts with .showcase -->
+<style>
+  .showcase .dj-stage {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    height: 320px;
+    margin: 0 auto;
+    overflow: hidden;
+    background: #6a1b9a;
+    border: 4px solid #3a8fb7;
+    border-radius: 12px;
+    font-family: "Times New Roman", Times, serif;
+    box-sizing: border-box;
+  }
+  .showcase .dj-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+    user-select: none;
+  }
+  .showcase .dj-record {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #3a8fb7 0 14%, #1a1a1a 15% 100%);
+    box-shadow: inset 0 0 0 6px #2a2a2a, 0 0 12px rgba(0, 0, 0, 0.5);
+  }
+  .showcase .dj-record::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    width: 6px;
+    height: 28px;
+    margin-left: -3px;
+    background: #3a8fb7;
+    border-radius: 3px;
+  }
+  .showcase .dj-tag {
+    padding: 8px 16px;
+    background: #3a8fb7;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    border-radius: 20px;
+  }
+  .showcase .dj-tag.dj-flash {
+    background: #ffffff;
+    color: #6a1b9a;
+  }
+  .showcase .dj-counter {
+    position: absolute;
+    bottom: 8px;
+    left: 12px;
+    color: #ffffff;
+    font-size: 14px;
+    opacity: 0.85;
+    pointer-events: none;
+  }
+</style>
+
+<!-- JavaScript: moves each piece, bounces it off the walls, spins the record, counts bounces -->
+<script>
+  (function () {
+    var stage = document.querySelector('.showcase .dj-stage');
+    var counter = stage.querySelector('.dj-counter');
+    var els = Array.prototype.slice.call(stage.querySelectorAll('.dj-item'));
+    var bounces = 0;
+    var angle = 0;
+
+    // Give each piece a random starting spot and speed
+    var items = els.map(function (el) {
+      return {
+        el: el,
+        x: Math.random() * 150,
+        y: Math.random() * 100,
+        vx: (Math.random() < 0.5 ? -1 : 1) * (1.5 + Math.random() * 1.5),
+        vy: (Math.random() < 0.5 ? -1 : 1) * (1.5 + Math.random() * 1.5)
+      };
+    });
+
+    // Clicking a piece makes it faster (up to a limit) and flashes the word tags
+    items.forEach(function (it) {
+      it.el.addEventListener('click', function () {
+        if (Math.abs(it.vx) < 9) { it.vx *= 1.4; it.vy *= 1.4; }
+        if (it.el.classList.contains('dj-tag')) {
+          it.el.classList.add('dj-flash');
+          setTimeout(function () { it.el.classList.remove('dj-flash'); }, 150);
+        }
+      });
+    });
+
+    function frame() {
+      var w = stage.clientWidth;
+      var h = stage.clientHeight;
+      angle += 3;
+
+      items.forEach(function (it) {
+        var maxX = w - it.el.offsetWidth - 8;
+        var maxY = h - it.el.offsetHeight - 8;
+        it.x += it.vx;
+        it.y += it.vy;
+
+        if (it.x < 0)    { it.x = 0;    it.vx = Math.abs(it.vx);  bounces++; }
+        if (it.x > maxX) { it.x = maxX; it.vx = -Math.abs(it.vx); bounces++; }
+        if (it.y < 0)    { it.y = 0;    it.vy = Math.abs(it.vy);  bounces++; }
+        if (it.y > maxY) { it.y = maxY; it.vy = -Math.abs(it.vy); bounces++; }
+
+        var spin = it.el.classList.contains('dj-record') ? ' rotate(' + angle + 'deg)' : '';
+        it.el.style.transform = 'translate(' + it.x + 'px,' + it.y + 'px)' + spin;
+      });
+
+      counter.textContent = 'Bounces: ' + bounces + ' · click anything to speed it up';
+      requestAnimationFrame(frame);
+    }
+    frame();
+  })();
+</script></div>
 
 <!-- Footer: fill in your name -->
 <footer>Built by YOUR NAME &middot; BMIS 235</footer>
